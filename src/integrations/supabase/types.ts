@@ -14,7 +14,185 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      form_files: {
+        Row: {
+          created_at: string
+          field_name: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_files_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_submissions: {
+        Row: {
+          additional_cep: string | null
+          additional_city: string | null
+          additional_complement: string | null
+          additional_neighborhood: string | null
+          additional_number: string | null
+          additional_state: string | null
+          additional_street: string | null
+          address_cep: string
+          address_city: string
+          address_complement: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          bank_account: string | null
+          bank_agency: string | null
+          bank_code: string | null
+          bank_name: string | null
+          bank_pix: string | null
+          commercial_references: string | null
+          company_activity: string
+          company_cnpj: string
+          company_ie: string | null
+          company_im: string | null
+          company_name: string
+          company_type: string
+          company_website: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          executive_cpf: string
+          executive_email: string
+          executive_name: string
+          executive_phone: string | null
+          executive_rg: string | null
+          fiscal_regime: string | null
+          has_additional_address: boolean | null
+          id: string
+          network_size: string | null
+          network_type: string | null
+          sales_segment: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          additional_cep?: string | null
+          additional_city?: string | null
+          additional_complement?: string | null
+          additional_neighborhood?: string | null
+          additional_number?: string | null
+          additional_state?: string | null
+          additional_street?: string | null
+          address_cep: string
+          address_city: string
+          address_complement?: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          bank_pix?: string | null
+          commercial_references?: string | null
+          company_activity: string
+          company_cnpj: string
+          company_ie?: string | null
+          company_im?: string | null
+          company_name: string
+          company_type: string
+          company_website?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          executive_cpf: string
+          executive_email: string
+          executive_name: string
+          executive_phone?: string | null
+          executive_rg?: string | null
+          fiscal_regime?: string | null
+          has_additional_address?: boolean | null
+          id?: string
+          network_size?: string | null
+          network_type?: string | null
+          sales_segment?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          additional_cep?: string | null
+          additional_city?: string | null
+          additional_complement?: string | null
+          additional_neighborhood?: string | null
+          additional_number?: string | null
+          additional_state?: string | null
+          additional_street?: string | null
+          address_cep?: string
+          address_city?: string
+          address_complement?: string | null
+          address_neighborhood?: string
+          address_number?: string
+          address_state?: string
+          address_street?: string
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          bank_pix?: string | null
+          commercial_references?: string | null
+          company_activity?: string
+          company_cnpj?: string
+          company_ie?: string | null
+          company_im?: string | null
+          company_name?: string
+          company_type?: string
+          company_website?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          executive_cpf?: string
+          executive_email?: string
+          executive_name?: string
+          executive_phone?: string | null
+          executive_rg?: string | null
+          fiscal_regime?: string | null
+          has_additional_address?: boolean | null
+          id?: string
+          network_size?: string | null
+          network_type?: string | null
+          sales_segment?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
