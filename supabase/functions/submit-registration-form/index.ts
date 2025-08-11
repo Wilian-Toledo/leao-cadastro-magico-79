@@ -331,7 +331,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email
     const emailResponse = await resend.emails.send({
       from: "Ficha Cadastral <onboarding@resend.dev>",
-      to: ["comercial@example.com"], // Configurar emails da equipe aqui
+      to: ["wnetto@leaoalimentosebebidas.com.br"], // Configurar emails da equipe aqui
       subject: `Nova Ficha Cadastral - ${data.companyName}`,
       html: emailHtml,
     });
