@@ -1,1 +1,4 @@
 project_id = "kernyvroqlfuiyrgypjv"
+
+[functions.submit-registration-form]
+verify_jwt = false

@@ -133,6 +133,7 @@ const FormSection = ({
 export default function RegistrationForm() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [bancoSearch, setBancoSearch] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [enderecoData, setEnderecoData] = useState({
     rua: '',
     bairro: '',
@@ -148,12 +149,98 @@ export default function RegistrationForm() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form data:", data);
-    toast({
-      title: "Formulário enviado com sucesso!",
-      description: "Seus dados foram registrados e serão analisados em breve.",
-    });
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add form data as JSON
+      const submissionData = {
+        executiveName: `${data.nomeExecutivo} | ${data.nomeCoordenador} | ${data.nomeGerente}`,
+        executiveCpf: "", // Não há CPF específico no schema atual
+        executiveRg: "",
+        executiveEmail: data.emailResponsavelPrincipal,
+        executivePhone: data.telefoneResponsavelPrincipal,
+        companyName: data.razaoSocial,
+        companyCnpj: data.cnpj,
+        companyIe: data.inscricaoEstadual,
+        companyIm: data.inscricaoMunicipal,
+        companyWebsite: "",
+        companyType: data.nomeFantasia,
+        companyActivity: "",
+        contactName: data.nomeContatoComercial,
+        contactPhone: data.telefoneContatoComercial,
+        contactEmail: data.emailContatoComercial,
+        addressCep: data.cep,
+        addressStreet: data.rua,
+        addressNumber: data.numero,
+        addressComplement: data.complemento,
+        addressNeighborhood: data.bairro,
+        addressCity: data.cidade,
+        addressState: data.estado,
+        hasAdditionalAddress: data.enderecoEntregaIgual === "nao" || data.enderecoCobrancaIgual === "nao",
+        additionalCep: "",
+        additionalStreet: "",
+        additionalNumber: "",
+        additionalComplement: "",
+        additionalNeighborhood: "",
+        additionalCity: "",
+        additionalState: "",
+        bankCode: "",
+        bankName: data.banco,
+        bankAgency: data.agencia,
+        bankAccount: data.conta,
+        bankPix: "",
+        commercialReferences: `Limite: ${data.limiteCredito}, Prazo: ${data.prazoMedioPagamento}, Faturamento: ${data.faturamentoMensal}`,
+        salesSegment: data.segmentoVendas,
+        networkType: data.redes?.join(', '),
+        networkSize: data.tempoAtuacao,
+        fiscalRegime: data.regimeTributario,
+      };
+      
+      formData.append('data', JSON.stringify(submissionData));
+      
+      // Add uploaded files
+      uploadedFiles.forEach((file, index) => {
+        formData.append(`file_${index}`, file);
+      });
+
+      // Submit to Edge Function
+      const response = await fetch(`https://kernyvroqlfuiyrgypjv.supabase.co/functions/v1/submit-registration-form`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "Formulário enviado com sucesso!",
+          description: "Seus dados foram registrados e nossa equipe foi notificada.",
+        });
+        
+        // Reset form
+        form.reset();
+        setUploadedFiles([]);
+      } else {
+        throw new Error(result.error || 'Erro desconhecido');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Erro ao enviar formulário",
+        description: "Ocorreu um erro ao processar seus dados. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1199,8 +1286,13 @@ export default function RegistrationForm() {
             </FormSection>
 
             <div className="flex justify-center pt-6">
-              <Button type="submit" size="lg" className="w-full md:w-auto">
-                Enviar Formulário
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full md:w-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Enviando..." : "Enviar Formulário"}
               </Button>
             </div>
           </form>
