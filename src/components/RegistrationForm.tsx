@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, User, Building2, Phone, MapPin, CreditCard, TrendingUp, Target, Network, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { sendToWebhook } from "@/lib/webhook";
 
 // Lista de bancos brasileiros
 const bancosBrasileiros = [
@@ -131,7 +132,7 @@ const FormSection = ({
 );
 
 export default function RegistrationForm() {
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  // const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [bancoSearch, setBancoSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [enderecoData, setEnderecoData] = useState({
@@ -150,6 +151,41 @@ export default function RegistrationForm() {
   });
 
   const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      // Por enquanto só o mínimo necessário para passar no IF do n8n
+      const payload = {
+        executivoNome: data.nomeExecutivo,
+        website: "" // garante que o honeypot do n8n esteja vazio
+      };
+  
+      const result = await sendToWebhook(payload);
+  
+      if (result?.success === false) {
+        throw new Error(result.error || "Erro desconhecido");
+      }
+  
+      toast({
+        title: "Formulário enviado com sucesso!",
+        description: "Seus dados foram enviados para nossa equipe.",
+      });
+  
+      form.reset();
+      // Se removeu upload, nada a fazer aqui
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Erro ao enviar formulário",
+        description: "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  
+  /*const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
     try {
@@ -241,16 +277,16 @@ export default function RegistrationForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  };*/
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  /*const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setUploadedFiles(prev => [...prev, ...files]);
   };
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  };
+  };*/
 
   const handleCepChange = async (cep: string, field: any) => {
     field.onChange(cep);
