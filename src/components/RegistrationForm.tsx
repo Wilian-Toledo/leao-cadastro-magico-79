@@ -153,10 +153,79 @@ export default function RegistrationForm() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // Por enquanto só o mínimo necessário para passar no IF do n8n
+      // helper para verificar se um array contém um valor (case-insensitive)
+      const has = (arr: string[] | undefined, value: string) =>
+        Array.isArray(arr) && arr.some(v => v?.toLowerCase() === value.toLowerCase());
+  
+      // payload completo esperado pelo n8n
       const payload = {
+        // 👤 Informações do Executivo
         executivoNome: data.nomeExecutivo,
-        website: "" // garante que o honeypot do n8n esteja vazio
+        coordenadorNome: data.nomeCoordenador,
+        gerenteNome: data.nomeGerente,
+  
+        // 📋 Dados da Empresa
+        razaoSocial: data.razaoSocial,
+        nomeFantasia: data.nomeFantasia,
+        cnpj: data.cnpj,
+        inscricaoEstadual: data.inscricaoEstadual,
+        inscricaoMunicipal: data.inscricaoMunicipal,
+  
+        // 📞 Contatos
+        contatoPrincipalNome: data.nomeResponsavelPrincipal,
+        contatoPrincipalTelefone: data.telefoneResponsavelPrincipal,
+        contatoPrincipalEmail: data.emailResponsavelPrincipal,
+  
+        contatoComercialNome: data.nomeContatoComercial,
+        contatoComercialTelefone: data.telefoneContatoComercial,
+        contatoComercialEmail: data.emailContatoComercial,
+  
+        contatoFinanceiroNome: data.nomeContatoFinanceiro,
+        contatoFinanceiroTelefone: data.telefoneContatoFinanceiro,
+        contatoFinanceiroEmail: data.emailContatoFinanceiro,
+  
+        // 🏠 Endereço Principal
+        enderecoCep: data.cep,
+        enderecoNumero: data.numero,
+        enderecoRua: data.rua,
+        enderecoBairro: data.bairro,
+        enderecoCidade: data.cidade,
+        enderecoUf: data.estado,
+  
+        // ❓ Endereços Adicionais
+        entregaIgualPrincipal: data.enderecoEntregaIgual === "sim",
+        cobrancaIgualPrincipal: data.enderecoCobrancaIgual === "sim",
+  
+        // 🏦 Dados Bancários
+        banco: data.banco,
+        agencia: data.agencia,
+        conta: data.conta,
+        tipoConta: data.tipoConta,
+  
+        // 💼 Dados Comerciais
+        limiteCreditoSolicitado: data.limiteCredito,
+        prazoMedioPagamentoDias: data.prazoMedioPagamento,
+        faturamentoMensalMedio: data.faturamentoMensal,
+        tempoAtuacaoAnos: data.tempoAtuacao,
+  
+        // 🎯 Segmento de Vendas
+        segVarejo: has(data.segmentoVendas, "Varejo"),
+        segDistribuidor: has(data.segmentoVendas, "Distribuidor"),
+        segAtacado: has(data.segmentoVendas, "Atacado"),
+        segKacc: has(data.segmentoVendas, "KACC"),
+        segCashCare: has(data.segmentoVendas, "Cash & Care"),
+        segCanaisEspeciais: has(data.segmentoVendas, "Canais Especiais"),
+  
+        // 🏪 Redes
+        redeVarejo: has(data.redes, "Varejo"),
+        redeDistribuidor: has(data.redes, "Distribuidor"),
+  
+        // 🧾 Dados Fiscais
+        regimeTributario: data.regimeTributario,
+        regimeEspecial: data.regimeEspecial === "sim",
+  
+        // honeypot
+        website: ""
       };
   
       const result = await sendToWebhook(payload);
@@ -171,7 +240,6 @@ export default function RegistrationForm() {
       });
   
       form.reset();
-      // Se removeu upload, nada a fazer aqui
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
@@ -183,6 +251,7 @@ export default function RegistrationForm() {
       setIsSubmitting(false);
     }
   };
+
 
   
   /*const onSubmit = async (data: FormData) => {
