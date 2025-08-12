@@ -1191,65 +1191,6 @@ export default function RegistrationForm() {
               />
             </FormSection>
 
-            {/* Anexar Documentos */}
-            <FormSection
-              icon={Upload}
-              title="Anexar Documentos"
-              description="Envie os documentos necessários"
-            >
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-corporate-orange-light rounded-lg p-6 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-corporate-orange mb-4" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Arraste e solte arquivos aqui ou clique para selecionar
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    PDF, DOC, DOCX, PNG, JPG - até 5MB cada
-                  </p>
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById('file-upload')?.click()}
-                  >
-                    Selecionar Arquivos
-                  </Button>
-                </div>
-                
-                {uploadedFiles.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Arquivos selecionados:</h4>
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-corporate-orange-light/10 rounded">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4" />
-                          <span className="text-sm">{file.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                        >
-                          Remover
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </FormSection>
-
             {/* Dados Fiscais */}
             <FormSection
               icon={Receipt}
