@@ -304,7 +304,7 @@ export default function RegistrationForm() {
         website: ""
       };
   
-      const result = await sendToWebhook(payload);
+      const result = await sendToWebhook(payload, uploadedFiles);
   
       if (result?.success === false) {
         throw new Error(result.error || "Erro desconhecido");
@@ -315,7 +315,8 @@ export default function RegistrationForm() {
         description: "Seus dados foram enviados para nossa equipe.",
       });
   
-      form.reset();
+      form.reset()
+      setUploadedFiles([]);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
