@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, User, Building2, Phone, MapPin, CreditCard, TrendingUp, Target, Network, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { sendToWebhook } from "@/lib/webhook";
+import { z } from "zod";
 
 // Lista de bancos brasileiros
 const bancosBrasileiros = [
@@ -39,6 +40,13 @@ const bancosBrasileiros = [
   { codigo: '380', nome: 'PicPay' },
   { codigo: '290', nome: 'Pagseguro' }
 ];
+
+const parseBR = (v: unknown): number => {
+  const s = String(v ?? "").trim();
+  if (!s) return 0;
+  return Number(s.replace(/[R$\s.]/g, "").replace(",", "."));
+};
+
 
 const formSchema = z.object({
   // Informações do Executivo
@@ -87,6 +95,7 @@ const formSchema = z.object({
   
   // Dados Comerciais
   limiteCredito: z.string().min(1, "Limite de crédito é obrigatório"),
+  anexos: z.array(z.instanceof(File)).optional().default([]),
   prazoMedioPagamento: z.string().min(1, "Prazo médio de pagamento é obrigatório"),
   faturamentoMensal: z.string().min(1, "Faturamento mensal é obrigatório"),
   tempoAtuacao: z.string().min(1, "Tempo de atuação é obrigatório"),
@@ -100,6 +109,19 @@ const formSchema = z.object({
   // Dados Fiscais
   regimeTributario: z.string().min(1, "Regime tributário é obrigatório"),
   regimeEspecial: z.enum(["sim", "nao"]),
+})
+.superRefine((values, ctx) => {
+    const limite = parseBR(values.limiteCredito);
+    const precisaAnexos = limite >= 50000;
+
+    if (precisaAnexos && (!values.anexos || values.anexos.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["anexos"],
+        message:
+          "Obrigatório anexar: Balanço Patrimonial, Contrato Social e Faturamento dos últimos 12 meses (para limites ≥ R$ 50.000,00).",
+      });
+  };
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -149,6 +171,14 @@ export default function RegistrationForm() {
       redes: [],
     },
   });
+
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    setUploadedFiles(files);
+    form.setValue("anexos", files, { shouldValidate: true, shouldDirty: true });
+  };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -1107,6 +1137,33 @@ export default function RegistrationForm() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="anexos"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Anexos (PDF/DOC/DOCX/PNG/JPG – até 5MB cada)</FormLabel>
+                      <FormControl>
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                          onChange={(e) => {
+                            handleFileUpload(e);   // atualiza uploadedFiles e o form.setValue("anexos", ...)
+                            field.onBlur();        // marca como touched p/ mostrar erro, se houver
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {parseBR(form.watch("limiteCredito")) >= 50000
+                          ? "Obrigatório para limites ≥ R$ 50.000,00: Balanço Patrimonial, Contrato Social e Faturamento dos últimos 12 meses."
+                          : "Opcional (torna-se obrigatório se o limite ≥ R$ 50.000,00)."}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="prazoMedioPagamento"
