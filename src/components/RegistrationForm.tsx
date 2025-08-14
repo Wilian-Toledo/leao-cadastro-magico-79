@@ -169,17 +169,63 @@ export default function RegistrationForm() {
     defaultValues: {
       segmentoVendas: [],
       redes: [],
+      anexos: [],
     },
   });
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/png",
+    "image/jpeg",
+  ];
+  const ALLOWED_EXT = ["pdf", "doc", "docx", "png", "jpg", "jpeg"];
+  
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    setUploadedFiles(files);
-    form.setValue("anexos", files, { shouldValidate: true, shouldDirty: true });
+    const files = Array.from(e.target?.files ?? []);
+  
+    const valid: File[] = [];
+    const rejected: string[] = [];
+  
+    for (const f of files) {
+      const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+      const typeOk = ALLOWED_TYPES.includes(f.type) || ALLOWED_EXT.includes(ext);
+      const sizeOk = f.size <= MAX_FILE_SIZE;
+  
+      if (typeOk && sizeOk) {
+        valid.push(f);
+      } else {
+        const reasons = [
+          !typeOk ? "tipo não permitido" : "",
+          !sizeOk ? "tamanho acima de 5MB" : "",
+        ]
+          .filter(Boolean)
+          .join(" + ");
+        rejected.push(`${f.name} (${reasons})`);
+      }
+    }
+  
+    if (rejected.length) {
+      toast?.({
+        title: "Alguns arquivos foram rejeitados",
+        description: rejected.join("\n"),
+        variant: "destructive",
+      });
+      // ou: alert(`Alguns arquivos foram rejeitados:\n${rejected.join("\n")}`);
+    }
+  
+    setUploadedFiles(valid);
+    form.setValue("anexos", valid, { shouldValidate: true, shouldDirty: true });
+  
+    // permite selecionar novamente o mesmo arquivo
+    if (e.target) e.target.value = "";
   };
 
+  
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
@@ -281,111 +327,6 @@ export default function RegistrationForm() {
       setIsSubmitting(false);
     }
   };
-
-
-  
-  /*const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true);
-    
-    try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      
-      // Add form data as JSON
-      const submissionData = {
-        executiveName: `${data.nomeExecutivo} | ${data.nomeCoordenador} | ${data.nomeGerente}`,
-        executiveCpf: "", // Não há CPF específico no schema atual
-        executiveRg: "",
-        executiveEmail: data.emailResponsavelPrincipal,
-        executivePhone: data.telefoneResponsavelPrincipal,
-        companyName: data.razaoSocial,
-        companyCnpj: data.cnpj,
-        companyIe: data.inscricaoEstadual,
-        companyIm: data.inscricaoMunicipal,
-        companyWebsite: "",
-        companyType: data.nomeFantasia,
-        companyActivity: "",
-        contactName: data.nomeContatoComercial,
-        contactPhone: data.telefoneContatoComercial,
-        contactEmail: data.emailContatoComercial,
-        addressCep: data.cep,
-        addressStreet: data.rua,
-        addressNumber: data.numero,
-        addressComplement: data.complemento,
-        addressNeighborhood: data.bairro,
-        addressCity: data.cidade,
-        addressState: data.estado,
-        hasAdditionalAddress: data.enderecoEntregaIgual === "nao" || data.enderecoCobrancaIgual === "nao",
-        additionalCep: "",
-        additionalStreet: "",
-        additionalNumber: "",
-        additionalComplement: "",
-        additionalNeighborhood: "",
-        additionalCity: "",
-        additionalState: "",
-        bankCode: "",
-        bankName: data.banco,
-        bankAgency: data.agencia,
-        bankAccount: data.conta,
-        bankPix: "",
-        commercialReferences: `Limite: ${data.limiteCredito}, Prazo: ${data.prazoMedioPagamento}, Faturamento: ${data.faturamentoMensal}`,
-        salesSegment: data.segmentoVendas,
-        networkType: data.redes?.join(', '),
-        networkSize: data.tempoAtuacao,
-        fiscalRegime: data.regimeTributario,
-      };
-      
-      formData.append('data', JSON.stringify(submissionData));
-      
-      // Add uploaded files
-      uploadedFiles.forEach((file, index) => {
-        formData.append(`file_${index}`, file);
-      });
-
-      // Submit to Edge Function
-      const response = await fetch(`https://kernyvroqlfuiyrgypjv.supabase.co/functions/v1/submit-registration-form`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: "Formulário enviado com sucesso!",
-          description: "Seus dados foram registrados e nossa equipe foi notificada.",
-        });
-        
-        // Reset form
-        form.reset();
-        setUploadedFiles([]);
-      } else {
-        throw new Error(result.error || 'Erro desconhecido');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "Erro ao enviar formulário",
-        description: "Ocorreu um erro ao processar seus dados. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };*/
-
-  /*const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setUploadedFiles(prev => [...prev, ...files]);
-  };
-
-  const removeFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  };*/
 
   const handleCepChange = async (cep: string, field: any) => {
     field.onChange(cep);
@@ -1163,6 +1104,29 @@ export default function RegistrationForm() {
                     </FormItem>
                   )}
                 />
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-2">
+                    <ul className="space-y-1">
+                      {uploadedFiles.map((file, idx) => (
+                        <li key={idx} className="flex items-center justify-between text-sm">
+                          <span className="truncate mr-3">{file.name}</span>
+                          <button
+                            type="button"
+                            className="text-red-600 hover:underline"
+                            onClick={() => {
+                              const arr = [...uploadedFiles];
+                              arr.splice(idx, 1);
+                              setUploadedFiles(arr);
+                              form.setValue("anexos", arr, { shouldValidate: true, shouldDirty: true });
+                            }}
+                          >
+                            Remover
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <FormField
                   control={form.control}
