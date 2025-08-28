@@ -373,7 +373,7 @@ export default function RegistrationForm() {
         <div className="text-center mb-8 bg-primary p-8 rounded-lg text-primary-foreground">
           <div className="flex items-center justify-center gap-4 mb-4">
             <img 
-              src="/images/logo-leao.png" 
+              src="/images/logo_header.63c87c6b.png" 
               alt="Leão Alimentos e Bebidas" 
               className="h-16 w-auto"
             />
